@@ -18,11 +18,14 @@ package com.example.android.roomwordssample;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.facebook.stetho.Stetho;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.Nullable;
@@ -32,6 +35,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -43,7 +51,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Stetho.initializeWithDefaults(this);
+
         setContentView(R.layout.activity_main);
+
 
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
         final WordListAdapter adapter = new WordListAdapter(this);
@@ -53,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         // Get a new or existing ViewModel from the ViewModelProvider.
         mWordViewModel = new ViewModelProvider(this).get(WordViewModel.class);
 
+
         // Add an observer on the LiveData returned by getAlphabetizedWords.
         // The onChanged() method fires when the observed data changes and the activity is
         // in the foreground.
@@ -60,9 +72,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable final List<Word> words) {
                 // Update the cached copy of the words in the adapter.
+                Log.v("Log", ""+words.size());
                 adapter.setWords(words);
             }
         });
+
+        inserWords();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -74,12 +89,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void inserWords() {
+        Word word;
+        List<Word> words = new ArrayList<>();
+
+        for(int i = 0; i< 30; i++){
+            word = new Word("World" + i);
+            words.add(word);
+        }
+
+        mWordViewModel
+                .deleteAll()
+                .doOnComplete(() -> Log.v("Log","deleted"))
+                .concatWith(completableObserver -> mWordViewModel.insertAll(words).subscribe())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe();
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == NEW_WORD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             Word word = new Word(data.getStringExtra(NewWordActivity.EXTRA_REPLY));
-            mWordViewModel.insert(word);
+            mWordViewModel.insert(word).subscribe();
         } else {
             Toast.makeText(
                     getApplicationContext(),

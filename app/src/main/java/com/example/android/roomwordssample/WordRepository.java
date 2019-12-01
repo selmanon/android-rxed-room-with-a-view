@@ -16,10 +16,19 @@ package com.example.android.roomwordssample;
  * limitations under the License.
  */
 
+import android.annotation.SuppressLint;
 import android.app.Application;
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
+import androidx.room.util.CopyLock;
 
 import java.util.List;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Abstracted Repository as promoted by the Architecture Guide.
@@ -49,9 +58,22 @@ class WordRepository {
 
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures
     // that you're not doing any long running operations on the main thread, blocking the UI.
-    void insert(Word word) {
-        WordRoomDatabase.databaseWriteExecutor.execute(() -> {
-            mWordDao.insert(word);
-        });
+    @SuppressLint("CheckResult")
+    void insert(final Word word) {
+        Completable.fromAction(() -> mWordDao.insert(word))
+        .subscribeOn(Schedulers.io()).subscribe();
+    }
+
+    Single<List<Long>> insertAll(final List<Word> words) {
+       return mWordDao.insertAll(words);
+    }
+
+    Completable deleteAll() {
+        return mWordDao.deleteAll();
+    }
+
+    void deleteAllAndInsertAll(final List<Word> words) {
+        Completable.fromAction(() -> mWordDao.deleteAllAndInsertAll(words))
+                .subscribeOn(Schedulers.io()).subscribe();
     }
 }

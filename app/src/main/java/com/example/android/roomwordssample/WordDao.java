@@ -21,8 +21,12 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 
 import java.util.List;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * The Room Magic is in this file, where you map a Java method call to an SQL query.
@@ -43,9 +47,18 @@ public interface WordDao {
     @Query("SELECT * from word_table ORDER BY word ASC")
     LiveData<List<Word>> getAlphabetizedWords();
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Word word);
 
+    @Insert(onConflict = OnConflictStrategy.ROLLBACK)
+    Single<List<Long>> insertAll(List<Word> words);
+
     @Query("DELETE FROM word_table")
-    void deleteAll();
+    Completable deleteAll();
+
+    @Transaction
+    default void deleteAllAndInsertAll(List<Word> words){
+        deleteAll();
+        insertAll(words);
+    }
 }

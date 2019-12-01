@@ -22,6 +22,10 @@ import androidx.lifecycle.LiveData;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * View Model to keep a reference to the word repository and
  * an up-to-date list of all words.
@@ -46,7 +50,19 @@ public class WordViewModel extends AndroidViewModel {
         return mAllWords;
     }
 
-    void insert(Word word) {
-        mRepository.insert(word);
+    Completable insert(Word word) {
+        return Completable.fromAction(() -> mRepository.insert(word)).subscribeOn(Schedulers.io());
+    }
+
+    Single<List<Long>> insertAll(List<Word> words) {
+        return mRepository.insertAll(words).subscribeOn(Schedulers.io());
+    }
+
+    Completable deleteAll() {
+        return mRepository.deleteAll().subscribeOn(Schedulers.io());
+    }
+
+    Completable deleteAllAndInsertAll(List<Word> words) {
+        return Completable.fromAction(() -> mRepository.deleteAllAndInsertAll(words)).subscribeOn(Schedulers.io());
     }
 }

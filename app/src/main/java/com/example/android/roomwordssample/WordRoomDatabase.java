@@ -23,8 +23,14 @@ import androidx.room.RoomDatabase;
 import android.content.Context;
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * This is the backend. The database. This used to be done by the OpenHelper.
@@ -40,8 +46,8 @@ abstract class WordRoomDatabase extends RoomDatabase {
     // marking the instance as volatile to ensure atomic access to the variable
     private static volatile WordRoomDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;
-    static final ExecutorService databaseWriteExecutor =
-            Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+    //static final ExecutorService databaseWriteExecutor =
+      //      Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
     static WordRoomDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -71,17 +77,12 @@ abstract class WordRoomDatabase extends RoomDatabase {
 
             // If you want to keep data through app restarts,
             // comment out the following block
-            databaseWriteExecutor.execute(() -> {
                 // Populate the database in the background.
                 // If you want to start with more words, just add them.
                 WordDao dao = INSTANCE.wordDao();
-                dao.deleteAll();
+                //dao.deleteAll();
 
-                Word word = new Word("Hello");
-                dao.insert(word);
-                word = new Word("World");
-                dao.insert(word);
-            });
+
         }
     };
 }
