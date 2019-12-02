@@ -98,11 +98,9 @@ public class MainActivity extends AppCompatActivity {
             words.add(word);
         }
 
-        mWordViewModel
-                .deleteAll()
-                .doOnComplete(() -> Log.v("Log","deleted"))
-                .concatWith(completableObserver -> mWordViewModel.insertAll(words).subscribe())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe();
+
+        mWordViewModel.deleteAll().andThen(mWordViewModel.insertAll(words)).subscribe();
+
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

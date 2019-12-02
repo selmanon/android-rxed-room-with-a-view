@@ -51,14 +51,9 @@ public interface WordDao {
     void insert(Word word);
 
     @Insert(onConflict = OnConflictStrategy.ROLLBACK)
-    Single<List<Long>> insertAll(List<Word> words);
+    List<Long> insertAll(List<Word> words);
 
     @Query("DELETE FROM word_table")
-    Completable deleteAll();
+    void deleteAll();
 
-    @Transaction
-    default void deleteAllAndInsertAll(List<Word> words){
-        deleteAll();
-        insertAll(words);
-    }
 }

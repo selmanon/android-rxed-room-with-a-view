@@ -18,8 +18,6 @@ package com.example.android.roomwordssample;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.room.util.CopyLock;
 
@@ -59,21 +57,18 @@ class WordRepository {
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures
     // that you're not doing any long running operations on the main thread, blocking the UI.
     @SuppressLint("CheckResult")
-    void insert(final Word word) {
-        Completable.fromAction(() -> mWordDao.insert(word))
-        .subscribeOn(Schedulers.io()).subscribe();
+    Completable insert(final Word word) {
+        return Completable.fromAction(() -> mWordDao.insert(word))
+        .subscribeOn(Schedulers.io());
     }
 
-    Single<List<Long>> insertAll(final List<Word> words) {
-       return mWordDao.insertAll(words);
+    void insertAll(final List<Word> words) {
+        Completable.fromAction(() -> mWordDao.insertAll(words))
+                .subscribeOn(Schedulers.io()).subscribe();
     }
 
-    Completable deleteAll() {
-        return mWordDao.deleteAll();
-    }
-
-    void deleteAllAndInsertAll(final List<Word> words) {
-        Completable.fromAction(() -> mWordDao.deleteAllAndInsertAll(words))
+    void deleteAll() {
+        Completable.fromAction(() -> mWordDao.deleteAll())
                 .subscribeOn(Schedulers.io()).subscribe();
     }
 }

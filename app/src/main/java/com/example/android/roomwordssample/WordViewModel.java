@@ -23,7 +23,6 @@ import androidx.lifecycle.LiveData;
 import java.util.List;
 
 import io.reactivex.Completable;
-import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -54,15 +53,11 @@ public class WordViewModel extends AndroidViewModel {
         return Completable.fromAction(() -> mRepository.insert(word)).subscribeOn(Schedulers.io());
     }
 
-    Single<List<Long>> insertAll(List<Word> words) {
-        return mRepository.insertAll(words).subscribeOn(Schedulers.io());
+    Completable insertAll(List<Word> words) {
+        return Completable.fromAction(() -> mRepository.insertAll(words)).subscribeOn(Schedulers.io());
     }
 
     Completable deleteAll() {
-        return mRepository.deleteAll().subscribeOn(Schedulers.io());
-    }
-
-    Completable deleteAllAndInsertAll(List<Word> words) {
-        return Completable.fromAction(() -> mRepository.deleteAllAndInsertAll(words)).subscribeOn(Schedulers.io());
+        return Completable.fromAction(() -> mRepository.deleteAll()).subscribeOn(Schedulers.io());
     }
 }
